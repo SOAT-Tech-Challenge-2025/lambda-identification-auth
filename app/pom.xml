@@ -2,14 +2,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>tech.buildrun</groupId>
-    <artifactId>aws-lambda-java-starter-example</artifactId>
+    <artifactId>lambda-identification-auth</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1</version>
-    <name>aws-lambda-java-starter-example</name>
+    <name>lambda-identification-auth</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <jackson.version>2.15.2</jackson.version>
         <aws-lambda-java-core.version>1.2.3</aws-lambda-java-core.version>
         <aws-lambda-java-events.version>3.11.3</aws-lambda-java-events.version>
@@ -58,6 +58,20 @@
             <version>${jackson.version}</version>
         </dependency>
         <!-- JACKSON -->
+
+        <!-- BANCO DE DADOS -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
 
         <!-- UNIT TESTS -->
         <dependency>
