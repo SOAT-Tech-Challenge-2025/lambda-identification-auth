@@ -52,14 +52,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
       - name: Terraform Plan
-        run: terraform plan -var="db_url=${{ vars.DB_URL }}" -var="db_user=${{ vars.DB_USER }}" -var="db_password=${{ vars.DB_PASSWORD }}"
+        run: terraform plan -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve -var="db_url=${{ vars.DB_URL }}" -var="db_user=${{ vars.DB_USER }}" -var="db_password=${{ vars.DB_PASSWORD }}"
+        run: terraform apply -auto-approve -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
