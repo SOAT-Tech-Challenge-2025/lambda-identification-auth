@@ -94,6 +94,13 @@
         </dependency>
         <!-- UNIT TESTS -->
 
+        <!-- COGNITO -->
+<!--        <dependency>-->
+<!--            <groupId>software.amazon.awssdk</groupId>-->
+<!--            <artifactId>cognitoidentityprovider</artifactId>-->
+<!--            <version>2.24.0</version>-->
+<!--        </dependency>-->
+
     </dependencies>
 
     <build>
