@@ -25,19 +25,19 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven and Create Zip
+      - name: Build with Maven
         run: |
           cd app
           mvn clean package -DskipTests
-          echo "Listing target directory contents:"
           ls -la target/
-          echo "Creating zip file..."
-          cd target
-          zip ../lambda-identification-auth.zip lambda-identification-auth-0.0.1.jar
+
+      - name: Create ZIP package
+        run: |
+          cd app/target
+          ls -la
+          zip -j ../lambda-identification-auth.zip lambda-identification-auth-*.jar
           cd ..
-          echo "Verifying zip file:"
-          ls -la lambda-identification-auth.zip
-          cd ..
+          ls -la
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
