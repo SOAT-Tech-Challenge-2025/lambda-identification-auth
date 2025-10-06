@@ -6,7 +6,7 @@ data "aws_iam_role" "lambda_exec_role" {
 resource "aws_lambda_function" "id_lambda" {
   function_name = "lambda-identification-auth"
   role          = data.aws_iam_role.lambda_exec_role.arn
-  handler       = "app.main.java.tech.buildrun.lambda.Handler::handleRequest"
+  handler       = "tech.buildrun.lambda.Handler::handleRequest"
   runtime       = "java17"
 
   filename         = "lambda-identification-auth.zip"
