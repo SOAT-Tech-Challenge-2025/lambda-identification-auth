@@ -1,10 +1,10 @@
 package tech.buildrun.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
-
-import java.util.Map;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 
 public interface CriarClienteLambdaInterface {
 
-    String handleRequest(Map<String, Object> input, Context context);
+    APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context);
 }
