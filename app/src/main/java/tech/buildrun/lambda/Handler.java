@@ -22,25 +22,35 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
         String method = event.getRequestContext().getHttp().getMethod();
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        try {
+            // 🔹 Garantir que o driver PostgreSQL esteja carregado
+            Class.forName("org.postgresql.Driver");
 
-            if ("GET".equalsIgnoreCase(method)) {
-                return consultarCliente(conn, event.getBody());
-            } else if ("POST".equalsIgnoreCase(method)) {
-                return criarCliente(conn, event.getBody());
-            } else {
-                // Retorna JSON mesmo para métodos não permitidos
-                return buildResponse(405, Map.of("message", "Método não permitido"));
+            // 🔹 Conexão com o banco usando variáveis de ambiente
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+
+                if ("GET".equalsIgnoreCase(method)) {
+                    return consultarCliente(conn, event.getBody());
+                } else if ("POST".equalsIgnoreCase(method)) {
+                    return criarCliente(conn, event.getBody());
+                } else {
+                    return buildResponse(405, Map.of("message", "Método não permitido"));
+                }
+
             }
 
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return buildResponse(500, Map.of("message", "Driver JDBC não encontrado: " + e.getMessage()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return buildResponse(500, Map.of("message", "Erro de conexão com o banco: " + e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            // Retorna JSON para erros internos
             return buildResponse(500, Map.of("message", "Erro interno: " + e.getMessage()));
         }
     }
 
-    // Consulta cliente pelo documento
     private APIGatewayV2HTTPResponse consultarCliente(Connection conn, String body) throws Exception {
         Map<String, String> request = mapper.readValue(body, HashMap.class);
         String document = request.get("document");
@@ -57,7 +67,6 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
         }
     }
 
-    // Cria um novo cliente
     private APIGatewayV2HTTPResponse criarCliente(Connection conn, String body) throws Exception {
         Map<String, String> request = mapper.readValue(body, HashMap.class);
         String document = request.get("document");
@@ -73,11 +82,10 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
             return buildResponse(201, Map.of("message", "Cliente criado com sucesso"));
         } catch (SQLException e) {
             e.printStackTrace();
-            return buildResponse(500, Map.of("message", "Erro ao criar cliente"));
+            return buildResponse(500, Map.of("message", "Erro ao criar cliente: " + e.getMessage()));
         }
     }
 
-    // Método helper para criar a resposta JSON
     private APIGatewayV2HTTPResponse buildResponse(int statusCode, Map<String, String> body) {
         APIGatewayV2HTTPResponse response = new APIGatewayV2HTTPResponse();
         try {

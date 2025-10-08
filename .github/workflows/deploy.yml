@@ -62,15 +62,23 @@ jobs:
 
       # 7️⃣ Terraform Plan
       - name: Terraform Plan
-        run: terraform plan -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="lambda_jar_path=app/target/lambda-identification-auth.jar"
+        run: terraform plan
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          TF_VAR_db_url: ${{ secrets.DB_URL }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+          TF_VAR_lambda_jar_path: app/target/lambda-identification-auth.jar
 
       # 8️⃣ Terraform Apply (apenas em main/master)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}" -var="lambda_jar_path=app/target/lambda-identification-auth.jar"
+        run: terraform apply -auto-approve
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          TF_VAR_db_url: ${{ secrets.DB_URL }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+          TF_VAR_lambda_jar_path: app/target/lambda-identification-auth.jar

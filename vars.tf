@@ -14,7 +14,7 @@ variable "tags" {
 # Banco de dados
 variable "db_url" {
   description = "URL do banco de dados PostgreSQL"
-  default     = "aws_db_instance.tc_psql_db.endpoint"
+  default     = "jdbc:postgresql://tc-psql-db.c0gz6og5payx.us-east-1.rds.amazonaws.com:5432/soat"
 }
 
 variable "db_user" {
