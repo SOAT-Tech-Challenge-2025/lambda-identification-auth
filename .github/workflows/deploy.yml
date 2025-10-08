@@ -38,7 +38,7 @@ jobs:
           echo "🗜️ Gerando ZIP final para Lambda..."
           cd target
           # Localiza o JAR completo (fat jar) gerado pelo shade plugin
-          JAR_FILE=$(ls *-shaded.jar | head -n 1)
+          JAR_FILE=$(ls *-.jar | head -n 1)
           echo "➡️ Encontrado: $JAR_FILE"
 
           # Cria o ZIP com nome fixo
