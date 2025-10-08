@@ -17,6 +17,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+
     steps:
       - uses: actions/checkout@v3
 
@@ -31,44 +32,23 @@ jobs:
         run: |
           cd app
           mvn clean package -DskipTests
-
+          
           echo "📦 Listando conteúdo da pasta target:"
           ls -la target/
-
+          
           echo "🗜️ Gerando ZIP final para Lambda..."
           cd target
-          # Localiza o JAR completo (fat jar) gerado pelo shade plugin
-          JAR_FILE=$(ls *-.jar | head -n 1)
+          
+          # Identifica automaticamente o JAR gerado
+          JAR_FILE=$(ls *.jar | head -n 1)
           echo "➡️ Encontrado: $JAR_FILE"
-
-          # Cria o ZIP com nome fixo
-          zip lambda-identification-auth.zip "$JAR_FILE"
-
+          
+          # Cria o ZIP que a Lambda vai usar
+          zip ../lambda-identification-auth.zip "$JAR_FILE"
+          
+          cd ..
           echo "📁 Conteúdo do ZIP:"
           unzip -l lambda-identification-auth.zip
-
-      # 📦 4. Exportar artefato do ZIP para uso em outros jobs (Terraform)
-      - name: Upload Lambda ZIP artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: lambda-zip
-          path: app/target/lambda-identification-auth.zip
-
-  terraform:
-    needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      # 🧱 1. Checkout do código
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 📥 2. Baixar o artefato gerado no job anterior
-      - name: Download Lambda artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: lambda-zip
-          path: ./build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -87,14 +67,24 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
       - name: Terraform Plan
-        run: terraform plan -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+        run: |
+          terraform plan \
+            -var="db_url=${{ secrets.DB_URL }}" \
+            -var="db_user=${{ secrets.DB_USER }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="lambda_zip_path=app/lambda-identification-auth.zip"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        run: terraform apply -auto-approve -var="db_url=${{ secrets.DB_URL }}" -var="db_user=${{ secrets.DB_USER }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+        run: |
+          terraform apply -auto-approve \
+            -var="db_url=${{ secrets.DB_URL }}" \
+            -var="db_user=${{ secrets.DB_USER }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="lambda_zip_path=app/lambda-identification-auth.zip"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}

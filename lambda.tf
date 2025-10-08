@@ -9,8 +9,8 @@ resource "aws_lambda_function" "id_lambda" {
   handler       = "tech.buildrun.lambda.Handler::handleRequest"
   runtime       = "java17"
 
-  filename         = "lambda-identification-auth.zip"
-  source_code_hash = filebase64sha256("lambda-identification-auth.zip")
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
     variables = {
