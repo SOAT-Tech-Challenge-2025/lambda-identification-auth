@@ -1,11 +1,10 @@
-name: Destroy Lambda
+name: Destroy Lambda via AWS CLI
 
 on:
   workflow_dispatch:   # Dispara manualmente
 
 env:
   AWS_REGION: us-east-1
-  TF_WORKSPACE: default
 
 jobs:
   destroy-lambda:
@@ -24,37 +23,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3️⃣ Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      # 4️⃣ Terraform Init
-      - name: Terraform Init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-
-      # 5️⃣ Import Lambda se não estiver no estado
-      - name: Terraform Import Lambda (if needed)
+      # 3️⃣ Verificar se a Lambda existe
+      - name: Check if Lambda exists
+        id: check_lambda
         run: |
-          if ! terraform state list | grep -q "aws_lambda_function.id_lambda"; then
-            echo "🔄 Lambda não encontrada no estado. Importando..."
-            terraform import aws_lambda_function.id_lambda lambda-identification-auth
+          if aws lambda get-function --function-name lambda-identification-auth --region $AWS_REGION > /dev/null 2>&1; then
+            echo "Lambda exists"
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "✅ Lambda já presente no estado do Terraform"
+            echo "Lambda does not exist"
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
-      # 6️⃣ Terraform Destroy apenas da Lambda
-      - name: Terraform Destroy Lambda
-        run: terraform destroy -target=aws_lambda_function.id_lambda -auto-approve
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          TF_VAR_db_url: ${{ secrets.DB_URL }}
-          TF_VAR_db_user: ${{ secrets.DB_USER }}
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-          TF_VAR_lambda_jar_path: app/target/lambda-identification-auth.jar
+      # 4️⃣ Deletar Lambda se existir
+      - name: Delete Lambda
+        if: steps.check_lambda.outputs.exists == 'true'
+        run: |
+          echo "Deleting Lambda..."
+          aws lambda delete-function --function-name lambda-identification-auth --region $AWS_REGION
+          echo "✅ Lambda deleted successfully"
+
+      # 5️⃣ Mensagem caso a Lambda não exista
+      - name: Lambda not found
+        if: steps.check_lambda.outputs.exists == 'false'
+        run: echo "⚠️ Lambda not found, nothing to delete"
