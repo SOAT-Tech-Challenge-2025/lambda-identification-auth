@@ -28,8 +28,7 @@ variable "db_password" {
   sensitive   = true
 }
 
-# Caminho do arquivo ZIP da Lambda
-variable "lambda_zip_path" {
-  description = "Caminho do arquivo ZIP da AWS Lambda"
+variable "lambda_jar_path" {
+  description = "Caminho do fat JAR da Lambda"
   type        = string
 }

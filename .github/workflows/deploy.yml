@@ -19,8 +19,10 @@ jobs:
       contents: read
 
     steps:
+      # 1️⃣ Checkout do repositório
       - uses: actions/checkout@v3
 
+      # 2️⃣ Setup Java 17 e cache Maven
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -28,28 +30,17 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      # 3️⃣ Build do Maven (fat JAR)
+      - name: Build fat JAR with Maven
         run: |
           cd app
           mvn clean package -DskipTests
-          
-          echo "📦 Listando conteúdo da pasta target:"
+          echo "📦 Conteúdo da pasta target:"
           ls -la target/
-          
-          echo "🗜️ Gerando ZIP final para Lambda..."
-          cd target
-          
-          # Identifica automaticamente o JAR gerado
-          JAR_FILE=$(ls *.jar | head -n 1)
-          echo "➡️ Encontrado: $JAR_FILE"
-          
-          # Cria o ZIP que a Lambda vai usar
-          zip ../lambda-identification-auth.zip "$JAR_FILE"
-          
-          cd ..
-          echo "📁 Conteúdo do ZIP:"
-          unzip -l lambda-identification-auth.zip
+          echo "➡️ Fat JAR gerado:"
+          ls -la target/lambda-identification-auth.jar
 
+      # 4️⃣ Configurar credenciais AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -57,26 +48,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # 5️⃣ Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # 6️⃣ Terraform Init
       - name: Terraform Init
         run: terraform init
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
+      # 7️⃣ Terraform Plan
       - name: Terraform Plan
         run: |
           terraform plan \
             -var="db_url=${{ secrets.DB_URL }}" \
             -var="db_user=${{ secrets.DB_USER }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="lambda_zip_path=app/lambda-identification-auth.zip"
+            -var="lambda_jar_path=app/target/lambda-identification-auth.jar"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
+      # 8️⃣ Terraform Apply (apenas em main/master)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         run: |
@@ -84,7 +79,7 @@ jobs:
             -var="db_url=${{ secrets.DB_URL }}" \
             -var="db_user=${{ secrets.DB_USER }}" \
             -var="db_password=${{ secrets.DB_PASSWORD }}" \
-            -var="lambda_zip_path=app/lambda-identification-auth.zip"
+            -var="lambda_jar_path=app/target/lambda-identification-auth.jar"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
