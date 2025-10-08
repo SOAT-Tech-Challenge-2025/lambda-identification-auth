@@ -35,7 +35,20 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
 
-      # 5️⃣ Terraform Destroy apenas da Lambda
+      # 5️⃣ Import Lambda se não estiver no estado
+      - name: Terraform Import Lambda (if needed)
+        run: |
+          if ! terraform state list | grep -q "aws_lambda_function.id_lambda"; then
+            echo "🔄 Lambda não encontrada no estado. Importando..."
+            terraform import aws_lambda_function.id_lambda lambda-identification-auth
+          else
+            echo "✅ Lambda já presente no estado do Terraform"
+          fi
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
+      # 6️⃣ Terraform Destroy apenas da Lambda
       - name: Terraform Destroy Lambda
         run: terraform destroy -target=aws_lambda_function.id_lambda -auto-approve
         env:
