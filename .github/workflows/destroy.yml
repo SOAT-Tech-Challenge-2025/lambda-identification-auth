@@ -1,4 +1,4 @@
-name: Destroy Lambda via AWS CLI
+name: Destroy Lambda
 
 on:
   workflow_dispatch:   # Dispara manualmente
