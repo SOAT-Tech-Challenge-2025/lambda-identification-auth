@@ -31,9 +31,44 @@ jobs:
         run: |
           cd app
           mvn clean package -DskipTests
-          echo "Listing target directory contents:"
+
+          echo "📦 Listando conteúdo da pasta target:"
           ls -la target/
-          cd ..
+
+          echo "🗜️ Gerando ZIP final para Lambda..."
+          cd target
+          # Localiza o JAR completo (fat jar) gerado pelo shade plugin
+          JAR_FILE=$(ls *-shaded.jar | head -n 1)
+          echo "➡️ Encontrado: $JAR_FILE"
+
+          # Cria o ZIP com nome fixo
+          zip lambda-identification-auth.zip "$JAR_FILE"
+
+          echo "📁 Conteúdo do ZIP:"
+          unzip -l lambda-identification-auth.zip
+
+      # 📦 4. Exportar artefato do ZIP para uso em outros jobs (Terraform)
+      - name: Upload Lambda ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-zip
+          path: app/target/lambda-identification-auth.zip
+
+  terraform:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🧱 1. Checkout do código
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 📥 2. Baixar o artefato gerado no job anterior
+      - name: Download Lambda artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-zip
+          path: ./build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
