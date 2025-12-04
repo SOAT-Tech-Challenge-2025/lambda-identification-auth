@@ -2,15 +2,15 @@ package tech.buildrun.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final String DB_URL = System.getenv("DB_URL");
     private static final String DB_USER = System.getenv("DB_USER");
@@ -19,20 +19,20 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        String method = event.getRequestContext().getHttp().getMethod();
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        String method = input.getHttpMethod();
 
         try {
-            // 🔹 Garantir que o driver PostgreSQL esteja carregado
+            // Garantir que o driver PostgreSQL esteja carregado
             Class.forName("org.postgresql.Driver");
 
-            // 🔹 Conexão com o banco usando variáveis de ambiente
+            // Conexão com o banco usando variáveis de ambiente
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
 
                 if ("GET".equalsIgnoreCase(method)) {
-                    return consultarCliente(conn, event.getBody());
+                    return consultarCliente(input, conn);
                 } else if ("POST".equalsIgnoreCase(method)) {
-                    return criarCliente(conn, event.getBody());
+                    return criarCliente(conn, input.getBody());
                 } else {
                     return buildResponse(405, Map.of("message", "Método não permitido"));
                 }
@@ -51,7 +51,8 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
         }
     }
 
-    private APIGatewayV2HTTPResponse consultarCliente(Connection conn, String body) throws Exception {
+    private APIGatewayProxyResponseEvent consultarCliente(APIGatewayProxyRequestEvent input, Connection conn) throws Exception {
+        String body = input.getBody();
         Map<String, String> request = mapper.readValue(body, HashMap.class);
         String document = request.get("document");
 
@@ -67,7 +68,7 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
         }
     }
 
-    private APIGatewayV2HTTPResponse criarCliente(Connection conn, String body) throws Exception {
+    private APIGatewayProxyResponseEvent criarCliente(Connection conn, String body) throws Exception {
         Map<String, String> request = mapper.readValue(body, HashMap.class);
         String document = request.get("document");
         String name = request.get("name");
@@ -86,8 +87,8 @@ public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGateway
         }
     }
 
-    private APIGatewayV2HTTPResponse buildResponse(int statusCode, Map<String, String> body) {
-        APIGatewayV2HTTPResponse response = new APIGatewayV2HTTPResponse();
+    private APIGatewayProxyResponseEvent buildResponse(int statusCode, Map<String, String> body) {
+        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
         try {
             response.setBody(mapper.writeValueAsString(body));
         } catch (Exception e) {
