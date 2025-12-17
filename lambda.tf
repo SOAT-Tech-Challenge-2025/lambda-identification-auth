@@ -13,21 +13,6 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
-resource "aws_security_group" "id_lambda" {
-  name        = "tc-id-lambda-sg"
-  description = "Security group for Lambda ID function"
-  vpc_id      = data.aws_vpc.tc_lambda_vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = var.tags
-}
-
 resource "aws_lambda_function" "id_lambda" {
   function_name = "lambda-identification-auth"
   depends_on    = [aws_iam_role_policy_attachment.lambda_logs]
@@ -46,10 +31,6 @@ resource "aws_lambda_function" "id_lambda" {
       DB_PASSWORD = var.db_password
     }
   }
-  vpc_config {
-    subnet_ids         = data.aws_subnets.tc_lambda_subnets.ids
-    security_group_ids = [aws_security_group.id_lambda.id]
-  }
 
   tags = var.tags
 }
@@ -67,6 +48,5 @@ resource "aws_security_group_rule" "id_lambda_to_rds" {
   from_port                = 5432
   to_port                  = 5432
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.id_lambda.id
   security_group_id        = data.aws_security_group.rds.id
 }
