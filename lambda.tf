@@ -46,6 +46,6 @@ resource "aws_security_group_rule" "id_lambda_to_rds" {
   from_port                = 5432
   to_port                  = 5432
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.id_lambda.id
+  source_security_group_id = data.aws_security_group.id_lambda.id
   security_group_id        = data.aws_security_group.rds.id
 }
