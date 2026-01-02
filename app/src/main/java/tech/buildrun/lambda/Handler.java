@@ -20,7 +20,7 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
     private static final String DB_URL = System.getenv("DB_URL");
     private static final String DB_USER = System.getenv("DB_USER");
     private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
-    private static final String JWT_SECRET = System.getenv("JWT_SECRET");
+    private static final String JWT_SECRET = System.getenv("MyS3cur3JWT$ecretK3y!2025@FIAP#Lambda");
     private static final long TOKEN_EXPIRATION_TIME = 3600000; // 1 hora em milissegundos
 
     private final ObjectMapper mapper = new ObjectMapper();
