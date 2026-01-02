@@ -23,6 +23,7 @@ resource "aws_lambda_function" "id_lambda" {
       DB_URL      = local.jdbc_url
       DB_USER     = var.db_user
       DB_PASSWORD = var.db_password
+      JWT_SECRET  = var.jwt_secret
     }
   }
   vpc_config {
@@ -48,4 +49,8 @@ resource "aws_security_group_rule" "id_lambda_to_rds" {
   protocol                 = "tcp"
   source_security_group_id = data.aws_security_group.id_lambda.id
   security_group_id        = data.aws_security_group.rds.id
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
