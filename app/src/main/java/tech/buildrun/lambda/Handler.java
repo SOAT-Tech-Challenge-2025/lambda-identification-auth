@@ -83,7 +83,7 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
             ));
         }
 
-        String sql = "INSERT INTO cliente (document, name, email) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO tb_cliente (nr_documento, nm_cliente, ds_email) VALUES (?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, document);
@@ -126,7 +126,7 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
 
         String document = pathParams.get("document");
 
-        String sql = "SELECT * FROM cliente WHERE document = ?";
+        String sql = "SELECT * FROM tb_cliente WHERE nr_documento = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, document);
