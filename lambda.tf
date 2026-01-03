@@ -41,7 +41,3 @@ resource "aws_lambda_permission" "apigw_invoke_lambda" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${data.aws_apigatewayv2_api.tc_api.execution_arn}/*/*"
 }
-
-data "aws_security_group" "rds" {
-  id = "sg-0e5acd7970f32e65e"
-}
