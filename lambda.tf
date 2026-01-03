@@ -42,11 +42,6 @@ resource "aws_lambda_permission" "apigw_invoke_lambda" {
   source_arn    = "${data.aws_apigatewayv2_api.tc_api.execution_arn}/*/*"
 }
 
-data "aws_security_group_rule" "id_lambda_to_rds" {
-  security_group_id       = data.aws_security_group.rds.id
-  type                    = "ingress"
-  from_port               = 5432
-  to_port                 = 5432
-  protocol                = "tcp"
-  source_security_group_id = data.aws_security_group.id_lambda.id
+data "aws_security_group" "rds" {
+  id = "sg-0e5acd7970f32e65e"
 }
