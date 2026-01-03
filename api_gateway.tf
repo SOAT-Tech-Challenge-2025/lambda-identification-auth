@@ -6,8 +6,8 @@ resource "aws_apigatewayv2_integration" "lambda_backend" {
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "lambda_route" {
+resource "aws_apigatewayv2_route" "auth_token_route" {
   api_id    = data.aws_apigatewayv2_api.tc_api.id
-  route_key = "ANY /lambda/{proxy+}"
+  route_key = "POST /auth/token"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
 }
