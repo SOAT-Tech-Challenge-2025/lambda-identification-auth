@@ -20,6 +20,6 @@ resource "aws_apigatewayv2_route" "clientes_post_route" {
 
 resource "aws_apigatewayv2_route" "clientes_get_route" {
   api_id    = data.aws_apigatewayv2_api.tc_api.id
-  route_key = "GET /clientes/{client_id}"
+  route_key = "GET /clientes/{document}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
 }
