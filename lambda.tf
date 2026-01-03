@@ -2,9 +2,19 @@ data "aws_iam_role" "lambda_exec_role" {
   name = "tc-infra-id-lambda-exec-role"
 }
 
-data "aws_security_group" "id_lambda" {
-  name  = "tc-id-lambda-sg"
-  vpc_id = data.aws_vpc.tc_lambda_vpc.id
+resource "aws_security_group" "id_lambda" {
+  name        = "tc-id-lambda-sg"
+  description = "Security group for Lambda ID function"
+  vpc_id      = data.aws_vpc.tc_lambda_vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = var.tags
 }
 
 resource "aws_lambda_function" "id_lambda" {
@@ -30,7 +40,7 @@ resource "aws_lambda_function" "id_lambda" {
   }
   vpc_config {
     subnet_ids         = data.aws_subnets.tc_lambda_subnets.ids
-    security_group_ids = [data.aws_security_group.id_lambda.id]
+    security_group_ids = [aws_security_group.id_lambda.id]
   }
 
   tags = var.tags
