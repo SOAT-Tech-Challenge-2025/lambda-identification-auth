@@ -51,6 +51,7 @@ resource "aws_security_group_rule" "id_lambda_to_rds" {
   security_group_id        = data.aws_security_group.rds.id
 
   lifecycle {
-    ignore_changes = all
+    create_before_destroy = false
+    ignore_changes        = all
   }
 }
