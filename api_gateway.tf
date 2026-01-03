@@ -11,3 +11,15 @@ resource "aws_apigatewayv2_route" "auth_token_route" {
   route_key = "POST /auth/token"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
 }
+
+resource "aws_apigatewayv2_route" "clientes_post_route" {
+  api_id    = data.aws_apigatewayv2_api.tc_api.id
+  route_key = "POST /clientes"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
+}
+
+resource "aws_apigatewayv2_route" "clientes_get_route" {
+  api_id    = data.aws_apigatewayv2_api.tc_api.id
+  route_key = "GET /clientes/{client_id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
+}
