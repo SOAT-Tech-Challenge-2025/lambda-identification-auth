@@ -1,49 +1,43 @@
-name: Destroy Lambda
+  yaml
+  name: Destroy Infrastructure
 
-on:
-  workflow_dispatch:   # Dispara manualmente
+  on:
+    workflow_dispatch:
 
-env:
-  AWS_REGION: us-east-1
+  env:
+    AWS_REGION: us-east-1
+    TF_DIR: .
 
-jobs:
-  destroy-lambda:
-    runs-on: ubuntu-latest
-    environment: Production
+  jobs:
+    destroy:
+      runs-on: ubuntu-latest
+      environment: Production
 
-    steps:
-      # 1️⃣ Checkout do repositório
-      - uses: actions/checkout@v3
+      steps:
+        - uses: actions/checkout@v3
 
-      # 2️⃣ Configurar credenciais AWS
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
 
-      # 3️⃣ Verificar se a Lambda existe
-      - name: Check if Lambda exists
-        id: check_lambda
-        run: |
-          if aws lambda get-function --function-name lambda-identification-auth --region $AWS_REGION > /dev/null 2>&1; then
-            echo "Lambda exists"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Lambda does not exist"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+        - name: Setup Terraform
+          uses: hashicorp/setup-terraform@v2
+          with:
+            terraform_version: '1.5.7'
 
-      # 4️⃣ Deletar Lambda se existir
-      - name: Delete Lambda
-        if: steps.check_lambda.outputs.exists == 'true'
-        run: |
-          echo "Deleting Lambda..."
-          aws lambda delete-function --function-name lambda-identification-auth --region $AWS_REGION
-          echo "✅ Lambda deleted successfully"
+        - name: Terraform Init
+          working-directory: ${{ env.TF_DIR }}
+          run: terraform init -input=false
 
-      # 5️⃣ Mensagem caso a Lambda não exista
-      - name: Lambda not found
-        if: steps.check_lambda.outputs.exists == 'false'
-        run: echo "⚠️ Lambda not found, nothing to delete"
+        - name: Terraform Plan Destroy (preview)
+          working-directory: ${{ env.TF_DIR }}
+          run: terraform plan -destroy -input=false -out=tfplan_destroy
+
+        - name: Terraform Destroy (apply)
+          working-directory: ${{ env.TF_DIR }}
+          run: terraform apply -input=false -auto-approve tfplan_destroy
+          env:
+            AWS_REGION: ${{ env.AWS_REGION }}
