@@ -40,7 +40,7 @@ resource "aws_lambda_function" "id_lambda" {
   }
   vpc_config {
     subnet_ids         = data.aws_subnets.tc_lambda_subnets.ids
-    security_group_ids = [data.aws_security_group.id_lambda.id]
+    security_group_ids = [aws_security_group.id_lambda.id]
   }
 
   tags = var.tags
