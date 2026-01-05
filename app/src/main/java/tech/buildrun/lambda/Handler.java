@@ -1,5 +1,6 @@
 package tech.buildrun.lambda;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,7 +18,7 @@ import java.util.Date;
 import java.util.Map;
 import javax.crypto.SecretKey;
 
-public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class Handler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayProxyResponseEvent> {
 
     private static final String JWT_SECRET = System.getenv("JWT_SECRET");
     private static final long EXPIRATION_TIME = 3600_000; // 1 hora
@@ -26,12 +27,17 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(
-            APIGatewayProxyRequestEvent request,
+            APIGatewayV2HTTPEvent request,
             Context context) {
 
         try {
-            String path = request.getPath();
-            String method = request.getHttpMethod();
+            String path = request.getRawPath();
+            String method = request.getRequestContext()
+                    .getHttp()
+                    .getMethod();
+
+            context.getLogger().log("PATH=" + path);
+            context.getLogger().log("METHOD=" + method);
 
             if ("/login".equals(path) && "POST".equalsIgnoreCase(method)) {
                 return login(request);
@@ -44,6 +50,7 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
             return response(404, Map.of("message", "Rota não encontrada"));
 
         } catch (Exception e) {
+            context.getLogger().log("ERRO: " + e.getMessage());
             try {
                 return response(500, Map.of("message", "Erro interno"));
             } catch (Exception ex) {
@@ -54,11 +61,8 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
 
     /* ================= LOGIN ================= */
 
-    private APIGatewayProxyResponseEvent login(APIGatewayProxyRequestEvent request) throws Exception {
-
-        if (request.getBody() == null || request.getBody().isBlank()) {
-            return response(400, Map.of("message", "Body obrigatório"));
-        }
+    private APIGatewayProxyResponseEvent login(APIGatewayV2HTTPEvent request)
+            throws Exception {
 
         Map<String, String> body =
                 mapper.readValue(request.getBody(), Map.class);
@@ -76,7 +80,7 @@ public class Handler implements RequestHandler<APIGatewayProxyRequestEvent, APIG
 
     /* ================= ME ================= */
 
-    private APIGatewayProxyResponseEvent me(APIGatewayProxyRequestEvent request)
+    private APIGatewayProxyResponseEvent me(APIGatewayV2HTTPEvent request)
             throws Exception {
 
         String authHeader = request.getHeaders().get("authorization");

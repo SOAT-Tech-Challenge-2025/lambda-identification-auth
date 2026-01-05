@@ -1,43 +1,42 @@
-  yaml
-  name: Destroy Infrastructure
+name: Destroy Infrastructure
 
-  on:
-    workflow_dispatch:
+on:
+  workflow_dispatch:
 
-  env:
-    AWS_REGION: us-east-1
-    TF_DIR: .
+env:
+  AWS_REGION: us-east-1
+  TF_DIR: .
 
-  jobs:
-    destroy:
-      runs-on: ubuntu-latest
-      environment: Production
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    environment: Production
 
-      steps:
-        - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-        - name: Configure AWS credentials
-          uses: aws-actions/configure-aws-credentials@v4
-          with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-            aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-        - name: Setup Terraform
-          uses: hashicorp/setup-terraform@v2
-          with:
-            terraform_version: '1.5.7'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
 
-        - name: Terraform Init
-          working-directory: ${{ env.TF_DIR }}
-          run: terraform init -input=false
+      - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform init -input=false
 
-        - name: Terraform Plan Destroy (preview)
-          working-directory: ${{ env.TF_DIR }}
-          run: terraform plan -destroy -input=false -out=tfplan_destroy
+      - name: Terraform Plan Destroy (preview)
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform plan -destroy -input=false -out=tfplan_destroy
 
-        - name: Terraform Destroy (apply)
-          working-directory: ${{ env.TF_DIR }}
-          run: terraform apply -input=false -auto-approve tfplan_destroy
-          env:
-            AWS_REGION: ${{ env.AWS_REGION }}
+      - name: Terraform Destroy (apply)
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform apply -input=false -auto-approve tfplan_destroy
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
