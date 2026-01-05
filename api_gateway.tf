@@ -6,8 +6,14 @@ resource "aws_apigatewayv2_integration" "lambda_backend" {
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "auth_token_route" {
+resource "aws_apigatewayv2_route" "login" {
   api_id    = data.aws_apigatewayv2_api.tc_api.id
-  route_key = "POST /auth/token"
+  route_key = "POST /login"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
+}
+
+resource "aws_apigatewayv2_route" "me" {
+  api_id    = data.aws_apigatewayv2_api.tc_api.id
+  route_key = "GET /me"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_backend.id}"
 }
