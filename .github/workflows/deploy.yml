@@ -79,7 +79,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           cd app
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=soat-tech-challenge-2025_lambda-identification-auth
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=SOAT-Tech-Challenge-2025_lambda-identification-auth
 
   # =========================================================
   # DEPLOY LAMBDA (ORIGINAL, só com depends) ⚠️
