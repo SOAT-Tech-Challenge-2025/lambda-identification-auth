@@ -79,10 +79,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B clean verify \
-            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          cd app
+          mvn clean verify sonar:sonar \
             -Dsonar.projectKey=soat-tech-challenge-2025_lambda-identification-auth \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
   # =========================================================
   # DEPLOY LAMBDA (ORIGINAL, só com depends) ⚠️
