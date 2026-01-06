@@ -71,6 +71,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build, test and analyze
+        working-directory: app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
